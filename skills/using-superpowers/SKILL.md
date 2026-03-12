@@ -91,6 +91,8 @@ These thoughts mean STOP—you're rationalizing:
 | "I'll just do this one thing first" | Check BEFORE doing anything. |
 | "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
 | "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
+| "User already approved, just execute" | Approval ≠ skip workflow. Skills define HOW to execute. |
+| "Previous session covered the process" | Compact summaries lose procedural state. Re-check skills from scratch. |
 
 ## Skill Priority
 
