@@ -48,6 +48,7 @@ Skip any step = lying, not verifying
 | Regression test works | Red-green cycle verified | Test passes once |
 | Agent completed | VCS diff shows changes | Agent reports "success" |
 | Requirements met | Line-by-line checklist | Tests passing |
+| Feature works as intended | Invoke the actual running system, observe real output | Code matches spec, tests pass |
 
 ## Red Flags - STOP
 
@@ -72,6 +73,7 @@ Skip any step = lying, not verifying
 | "I'm tired" | Exhaustion ≠ excuse |
 | "Partial check is enough" | Partial proves nothing |
 | "Different words so rule doesn't apply" | Spirit over letter |
+| "Code matches spec and tests pass" | Code-level truth ≠ runtime truth. Invoke the actual system. |
 
 ## Key Patterns
 
@@ -104,6 +106,20 @@ Skip any step = lying, not verifying
 ✅ Agent reports success → Check VCS diff → Verify changes → Report actual state
 ❌ Trust agent report
 ```
+
+**End-to-end (실제 시스템 호출):**
+```
+✅ Invoke the actual running system → Observe real output → Confirm it matches the intended purpose
+❌ "Code matches spec" / "Tests pass" (code-level truth ≠ runtime truth)
+```
+검증에는 두 가지 계층이 있다:
+1. **코드 계층**: 스펙과 코드가 일치하는지, 테스트가 통과하는지 — 이건 기본이다.
+2. **실동작 계층**: 실제 시스템을 호출했을 때 의도한 목적대로 동작하는지 — 이것이 진짜 검증이다.
+
+코드 계층만 확인하고 "완료"라고 말하는 것은 검증이 아니다.
+실제 시스템이 이전 상태로 실행 중일 수 있고, 환경 차이가 있을 수 있고,
+코드에는 없는 런타임 의존성이 있을 수 있다.
+반드시 실제 시스템을 호출하고, 실제 출력을 보고, 의도한 목적과 대조해야 한다.
 
 ## Why This Matters
 
