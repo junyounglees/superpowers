@@ -18,6 +18,18 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 **Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
 
+## Ground Truth First (Critical)
+
+Before writing any plan, verify your assumptions against reality. Plans built on assumptions alone produce code that "matches the spec" but doesn't actually work. Do this BEFORE defining tasks or file structure:
+
+1. **Read the actual code** you'll be modifying. Don't plan changes to code you haven't read.
+2. **Run existing tests** to confirm the current baseline (how many pass, what's the test command).
+3. **Explore APIs** you'll be calling — check actual response shapes, field names, error cases. If the plan involves an external API, make a real call and inspect the response.
+4. **Run spike experiments** if behavior is uncertain — a 30-second test call is cheaper than a wrong plan.
+5. **Check existing patterns** in the codebase — how are similar things already done?
+
+The plan should be grounded in observed facts, not hypotheses. Every "this API returns X" or "this function does Y" claim in the plan should be verified by actually looking at it. If a hypothesis was validated during brainstorming (e.g., an API experiment), reference the specific results.
+
 ## Scope Check
 
 If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.

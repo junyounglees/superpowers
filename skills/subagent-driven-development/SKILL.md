@@ -5,11 +5,74 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
-Execute plan by dispatching fresh subagent per task, with two-stage review after each: spec compliance review first, then code quality review.
+Execute plan by dispatching fresh subagent per task, with three-stage review after each: spec compliance review first, then behavioral verification, then code quality review.
 
 **Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
-**Core principle:** Fresh subagent per task + two-stage review (spec then quality) = high quality, fast iteration
+**Core principle:** Fresh subagent per task + three-stage review (spec → behavior → quality) = high quality, fast iteration
+
+## Behavioral Verification (Critical)
+
+There are three different things that are easily confused:
+
+1. **Spec-to-code matching** — "코드가 문서와 같은 말을 하는가?" (spec compliance)
+2. **Tests passing** — "테스트가 통과하는가?" (test verification)
+3. **Actual behavior matching intent** — "우리가 원했던 것이 실제로 달성되었는가?" (behavioral verification)
+
+These are NOT the same. Tests can pass while the actual intent is unmet. Spec can match code while the code doesn't do what we wanted. **All three must be independently confirmed.**
+
+After spec compliance passes, YOU (the coordinator) must verify actual behavior:
+
+1. **Read the changed files** — don't trust the subagent's report. Read the actual code with your own eyes.
+2. **Run the code** — execute tests, run the actual program, call the actual API. Read the output yourself.
+3. **Write a completion report** — follow the format below. Do NOT claim completion without this report.
+
+### Completion Report Format
+
+Every implementation must end with a completion report that covers all of the following:
+
+**1. 목표 (Goal):** 원래 문제 정의를 그대로 가져온다. "우리가 뭘 원했는가?"
+
+**2. 달성된 것 (Achieved):** 각 목표 항목에 대해:
+- 어떻게 해결되었는지 구체적으로 설명한다.
+- 어떤 증거로 확인했는지 명시한다 (테스트 출력, 실제 실행 로그, API 응답 등).
+- "확인했다"의 기준은 직접 실행/조회한 결과이지, 서브에이전트의 보고가 아니다.
+
+**3. 미확인 (Unverified):** 확인하지 못한 부분을 숨기지 말고 전부 나열한다.
+- 왜 확인하지 못했는지 (예: API 키 없음, 에러 재현 불가).
+- 확인하려면 뭘 해야 하는지.
+
+**4. 미확인 항목 검증:** 미확인 목록의 각 항목을 하나씩 검증한다.
+- 검증 가능한 것은 즉시 실행하여 확인한다.
+- 검증 불가능한 것은 왜 불가능한지, 어떤 조건이 충족되면 검증할 수 있는지 명시한다.
+
+**5. 최종 결론:** 모든 미확인 항목이 해소된 후에만 "완료"를 선언한다. 해소되지 않은 미확인이 있으면 "조건부 완료"로 명시하고 남은 항목을 기록한다.
+
+### Example
+
+```
+## 목표
+업로드 후 위하고에 실제로 등록되었는지 확인하는 단계가 없다 → sequence로 확인하고, 없으면 저장하지 않는다.
+
+## 달성된 것
+- 성공 경로: main_direct.py 전체 흐름 실행 → 토스페이먼츠 23,920원 → 업로드(seq=27) → 검증 통과(0.10초) → JSONL 저장. 실행 로그로 확인.
+- verify_upload()가 실제 위하고 API를 호출: e2e 테스트에서 True/False 올바르게 반환 확인.
+
+## 미확인
+- 실패 경로: 검증 실패 시 RuntimeError가 발생하고 JSONL 저장이 차단되는지.
+
+## 미확인 항목 검증
+- 실패 경로: 존재하지 않는 sequence(999999)로 동일 로직 실행 → RuntimeError 발생, 저장 단계 미도달 확인.
+
+## 최종 결론
+모든 경로 검증 완료. 완료.
+```
+
+### Anti-Pattern
+
+- "e2e 3개 통과, spec 체크리스트 전부 O → 완료" — 테스트와 spec만 확인하고 실제 동작 미검증.
+- "달성된 것"만 나열하고 "미확인"을 생략 — 모르는 것을 숨기는 것.
+- "미확인"을 나열만 하고 검증하지 않음 — 미확인을 인식했으면 검증까지 해야 한다.
 
 ## When to Use
 
@@ -34,7 +97,7 @@ digraph when_to_use {
 **vs. Executing Plans (parallel session):**
 - Same session (no context switch)
 - Fresh subagent per task (no context pollution)
-- Two-stage review after each task: spec compliance first, then code quality
+- Three-stage review after each task: spec compliance → behavioral verification → code quality
 - Faster iteration (no human-in-loop between tasks)
 
 ## The Process
@@ -52,6 +115,9 @@ digraph process {
         "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [shape=box];
         "Spec reviewer subagent confirms code matches spec?" [shape=diamond];
         "Implementer subagent fixes spec gaps" [shape=box];
+        "Behavioral verification:\nRun code, read output, confirm actual behavior" [shape=box style=filled fillcolor=lightyellow];
+        "Behavior matches expectations?" [shape=diamond];
+        "Fix behavioral issues" [shape=box];
         "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
         "Code quality reviewer subagent approves?" [shape=diamond];
         "Implementer subagent fixes quality issues" [shape=box];
@@ -72,7 +138,11 @@ digraph process {
     "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
     "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no"];
     "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="re-review"];
-    "Spec reviewer subagent confirms code matches spec?" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="yes"];
+    "Spec reviewer subagent confirms code matches spec?" -> "Behavioral verification:\nRun code, read output, confirm actual behavior" [label="yes"];
+    "Behavioral verification:\nRun code, read output, confirm actual behavior" -> "Behavior matches expectations?";
+    "Behavior matches expectations?" -> "Fix behavioral issues" [label="no"];
+    "Fix behavioral issues" -> "Behavioral verification:\nRun code, read output, confirm actual behavior" [label="re-verify"];
+    "Behavior matches expectations?" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="yes"];
     "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" -> "Code quality reviewer subagent approves?";
     "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no"];
     "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
