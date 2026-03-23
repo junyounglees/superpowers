@@ -93,6 +93,8 @@ These thoughts mean STOP—you're rationalizing:
 | "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
 | "User already approved, just execute" | Approval ≠ skip workflow. Skills define HOW to execute. |
 | "Previous session covered the process" | Compact summaries lose procedural state. Re-check skills from scratch. |
+| "테스트 통과했고 실행도 됐으니 커밋하자" | 완료 선언 = verification-before-completion 스킬 호출 필수. 테스트 통과 ≠ 요구사항 충족. |
+| "검증 결과를 표로 정리했으니 됐다" | 표를 만든 것은 검증이 아니다. 스킬의 체크리스트를 따랐는가? |
 
 ## Skill Priority
 
