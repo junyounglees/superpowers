@@ -23,6 +23,8 @@ If you haven't run the verification command in this message, you cannot claim it
 
 ## The Gate Function
 
+**이 스킬이 호출되면 즉시 TaskCreate로 아래 체크리스트를 태스크로 생성한다.** 태스크 없이 검증을 진행하면 항목을 빠뜨린다.
+
 ```
 BEFORE claiming any status or expressing satisfaction:
 
@@ -36,6 +38,17 @@ BEFORE claiming any status or expressing satisfaction:
 
 Skip any step = lying, not verifying
 ```
+
+## Completion Checklist (자동 생성 필수)
+
+이 스킬이 호출되면 아래 항목을 TaskCreate로 생성하고, 하나씩 완료하며 진행한다.
+프로젝트 특성에 따라 해당하지 않는 항목은 "해당 없음"으로 완료 처리한다.
+
+1. **코드 계층 검증**: 테스트 전부 통과하는지 실행하고 결과 확인
+2. **실동작 계층 검증**: 실제 시스템을 호출해서 의도한 목적대로 동작하는지 확인 (서비스 재시작 필요 시 재시작)
+3. **스펙/플랜 문서 상태 업데이트**: 완료로 표시
+4. **로드맵/변경이력 업데이트**: 현재 상태를 반영
+5. **스킬/프로세스 개선 기록**: 이번 작업에서 배운 점이 있으면 해당 스킬에 반영
 
 ## Common Failures
 
